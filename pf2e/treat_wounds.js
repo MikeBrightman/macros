@@ -28,7 +28,6 @@
                  Fresh Ingredients Herbalist Dedication Skill Feat + item cost)
 */
 
-
 // Outcome prefix text for each case
 // These can be changed to add more interesting flavourtext to the outcomes
 let Success_flavor_msg = "Success. Recipent will heal: ";
