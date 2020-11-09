@@ -17,7 +17,8 @@
   Please check this page if you are preparing to use treat wounds often, and want a better understanding
   or if you have questions about the roll itself (or DM/Player discussion).
 
-  TODO:
+  TODO checklist:
+  Take into account crit/fumble rolls (1 or 20 on the die)
   Take into account Medic Dedication Feat (additional healing effect)
   Take into account Feats such as Natural medicine (use alternate proficiency bonus)
   Factor in other bonuses such as 
@@ -29,11 +30,12 @@
 
 
 // Outcome prefix text for each case
-let Success_flavor_msg = "Success, you will heal:";
-let Failure_flavor_msg = "Failure";
-let Dmg_flavor_msg = "Damage taken:";
+// These can be changed to add more interesting flavourtext to the outcomes
+let Success_flavor_msg = "Success. Recipent will heal: ";
+let Failure_flavor_msg = "Failure. ";
+let Critical_Failure_flavor_msg = "Damage caused to recipient: ";
 
-// Select difficulty class + determine bonus to result based on keys held
+// Select difficulty class + determine bonus to result (based on keys held)
 let dc_text = "(Trained, DC 15)";
 let dc_mod = 0
 if(event.ctrlKey) {
@@ -52,32 +54,32 @@ else if(event.altKey) {
   dc_mod = 15;
 }
 let BonusHealFromDC = dc_mod*2;
-let failThresh = 14+dc_mod;
+let failThreshold = 14+dc_mod;
 
-// Roll the outcome
+// Roll the check outcome and output to chat as a standard roll
 let skillRoll = new Roll("1d20+@skills.med.value", token.actor.getRollData());
 skillRoll.roll();
 skillRoll.toMessage({
-  flavor: "Treat wounds "+dc_text,
+  flavor: "Treat wounds " + dc_text,
   speaker: ChatMessage.getSpeaker({token: token})
 });
 
 let result = skillRoll.total; //final result with modifiers
-let crit = skillRoll.result[0] == 20; //0 or 1 respresenting a crit roll
 
-let successRoll = new Roll('2d8+@bonusheal', {BonusHealFromDC});
-let critSuccessRoll = new Roll('4d8+@bonusheal', {BonusHealFromDC});
+//Setup available outcomes
+let successRoll = new Roll('2d8+@BonusHealFromDC', {BonusHealFromDC});
+let critSuccessRoll = new Roll('4d8+@BonusHealFromDC', {BonusHealFromDC});
 let failureRoll = new Roll("0d0");
 let critFailureRoll = new Roll("1d8");
 
 // Comparing the medicine check with the DC and returning the corresponding result
 let hitPointRoll;
 let outcomeText = "";
-if(result>failThresh)
+if(result>failThreshold)
 {
     outcomeText +=Success_flavor_msg;
     hitPointRoll = successRoll;
-    if(result-10>failThresh)
+    if(result-10>failThreshold)
     {
         outcomeText = "Critical " + outcomeText;
         hitPointRoll = critSuccessRoll;
@@ -87,34 +89,15 @@ else
 {
     outcomeText += Failure_flavor_msg;
     hitPointRoll = failureRoll;
-    if(failThresh-9>result)
+    if(failThreshold-9>result)
     {
-        outcomeText = "Critical " + outcomeText;
+        outcomeText = "Critical " + outcomeText + Critical_Failure_flavor_msg;
         hitPointRoll = critFailureRoll;
     }
 }
 
-switch (successLevel) {
-  case 0:
-    //crit failure
-    day = "Sunday";
-    break;
-  case 1:
-    //crit failure
-    day = "Sunday";
-    break;
-  case 2:
-    //crit failure
-    day = "Sunday";
-    break;
-  case 3:
-    //crit failure
-    day = "Sunday";
-    break;
-}
-
 hitPointRoll.roll();
 hitPointRoll.toMessage({
-    flavor: "result "+ result + ", " + outcomeText,
+    flavor: outcomeText,
     speaker: ChatMessage.getSpeaker({token: token})
   });
